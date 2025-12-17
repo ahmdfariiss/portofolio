@@ -6,6 +6,15 @@ import { useRef, useState } from 'react';
 import { FaEnvelope, FaMapMarkerAlt, FaPaperPlane } from 'react-icons/fa';
 import { socialLinks } from '@/constants';
 import { useCMSProfile } from '@/hooks/useCMSData';
+import emailjs from '@emailjs/browser';
+
+// ==========================================
+// EmailJS Configuration
+// Ganti dengan credential dari emailjs.com
+// ==========================================
+const EMAILJS_SERVICE_ID = 'service_mqp7e52'; // Ganti dengan Service ID kamu
+const EMAILJS_TEMPLATE_ID = 'template_y1agy9m'; // Ganti dengan Template ID kamu
+const EMAILJS_PUBLIC_KEY = 'pxNqsgOTki_vb8cAb'; // Ganti dengan Public Key kamu
 
 export default function Contact() {
   const ref = useRef(null);
@@ -18,15 +27,37 @@ export default function Contact() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    setFormState({ name: '', email: '', message: '' });
-    setTimeout(() => setIsSubmitted(false), 3000);
+    setError('');
+
+    try {
+      // Kirim email menggunakan EmailJS
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          from_name: formState.name,
+          from_email: formState.email,
+          message: formState.message,
+          to_email: 'afarisalaziz201@gmail.com',
+        },
+        EMAILJS_PUBLIC_KEY
+      );
+
+      setIsSubmitted(true);
+      setFormState({ name: '', email: '', message: '' });
+      setTimeout(() => setIsSubmitted(false), 3000);
+    } catch (err) {
+      console.error('EmailJS Error:', err);
+      setError('Gagal mengirim pesan. Silakan coba lagi.');
+      setTimeout(() => setError(''), 3000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (
@@ -87,6 +118,17 @@ export default function Contact() {
                 />
               </div>
 
+              {/* Error Message */}
+              {error && (
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-red-500 text-sm"
+                >
+                  {error}
+                </motion.p>
+              )}
+
               <motion.button
                 type="submit"
                 disabled={isSubmitting}
@@ -96,13 +138,17 @@ export default function Contact() {
               >
                 <span
                   className={`text-lg font-medium transition-colors ${
-                    isSubmitted ? 'text-white' : 'text-white'
+                    isSubmitted
+                      ? 'text-green-500'
+                      : error
+                      ? 'text-red-500'
+                      : 'text-white'
                   }`}
                 >
                   {isSubmitting
                     ? 'Sending...'
                     : isSubmitted
-                    ? 'Message Sent!'
+                    ? 'Message Sent! ✓'
                     : 'Send Message'}
                 </span>
                 <motion.div
