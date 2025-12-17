@@ -117,7 +117,7 @@ export default function Skills() {
           >
             <div className="flex flex-wrap justify-center gap-12 md:gap-20">
               {[
-                { value: '12+', label: 'Technologies' },
+                { value: `${skills.length}+`, label: 'Technologies' },
                 { value: '3', label: 'Specializations' },
                 { value: '∞', label: 'Learning' },
               ].map((stat, index) => (

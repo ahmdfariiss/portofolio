@@ -4,15 +4,16 @@ import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
 import { FaGithub, FaExternalLinkAlt } from 'react-icons/fa';
-import { useCMSProjects } from '@/hooks/useCMSData';
+import { useCMSProjectsWithId } from '@/hooks/useCMSData';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Projects() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const [activeFilter, setActiveFilter] = useState('All');
   const [hoveredProject, setHoveredProject] = useState<number | null>(null);
-  const projects = useCMSProjects();
+  const projects = useCMSProjectsWithId();
 
   const filters = ['All', 'Web', 'IoT'];
   const filteredProjects =
@@ -82,7 +83,7 @@ export default function Projects() {
 
               return (
                 <motion.div
-                  key={project.title}
+                  key={project.id || project.title}
                   layout
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -92,95 +93,116 @@ export default function Projects() {
                   onHoverEnd={() => setHoveredProject(null)}
                   className={`group relative ${gridClass}`}
                 >
-                  <motion.div
-                    whileHover={{ scale: 0.98 }}
-                    className="h-full bg-neutral-900/50 border border-white/5 rounded-2xl p-6 flex flex-col justify-between overflow-hidden hover:border-white/20 transition-all duration-300"
-                  >
-                    {/* Background Image */}
-                    {project.image && (
-                      <div className="absolute inset-0 z-0">
-                        <Image
-                          src={project.image}
-                          alt={project.title}
-                          fill
-                          className="object-cover opacity-20 group-hover:opacity-30 transition-opacity duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/80 to-neutral-900/60" />
-                      </div>
-                    )}
-
-                    {/* Background Pattern (when no image) */}
-                    {!project.image && (
-                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                        <div className="absolute inset-0 bg-linear-to-br from-white/5 to-transparent" />
-                      </div>
-                    )}
-
-                    {/* Top Section */}
-                    <div className="relative z-10">
-                      <div className="flex items-start justify-between mb-4">
-                        <span className="text-xs text-neutral-600 font-mono uppercase tracking-wider">
-                          {project.category}
-                        </span>
-                        {project.featured && (
-                          <span className="text-[10px] text-black bg-white px-2 py-1 rounded-full font-medium">
-                            Featured
-                          </span>
-                        )}
-                      </div>
-
-                      <h3 className="text-xl md:text-2xl font-medium text-white mb-2 group-hover:text-neutral-200 transition-colors">
-                        {project.title}
-                      </h3>
-
-                      <p className="text-neutral-500 text-sm leading-relaxed">
-                        {project.description}
-                      </p>
-                    </div>
-
-                    {/* Bottom Section */}
-                    <div className="relative z-10">
-                      {/* Tech Icons */}
-                      <div className="flex items-center gap-3 mb-4">
-                        {project.tech.map((Icon, techIndex) => (
-                          <Icon
-                            key={techIndex}
-                            size={16}
-                            className="text-neutral-600 group-hover:text-neutral-400 transition-colors"
+                  <Link href={project.id ? `/project/${project.id}` : '#'}>
+                    <motion.div
+                      whileHover={{ scale: 0.98 }}
+                      className="h-full bg-neutral-900/50 border border-white/5 rounded-2xl p-6 flex flex-col justify-between overflow-hidden hover:border-white/20 transition-all duration-300 cursor-pointer"
+                    >
+                      {/* Project Image - Clear Display */}
+                      {project.image && (
+                        <div className="absolute top-4 right-4 w-40 h-24 md:w-56 md:h-32 lg:w-64 lg:h-36 z-10 rounded-xl overflow-hidden border border-white/10 shadow-lg bg-white">
+                          <Image
+                            src={project.image}
+                            alt={project.title}
+                            fill
+                            className="object-cover"
                           />
-                        ))}
+                        </div>
+                      )}
+
+                      {/* Subtle Background Gradient */}
+                      {project.image && (
+                        <div className="absolute inset-0 z-0">
+                          <div className="absolute inset-0 bg-linear-to-br from-neutral-900 via-neutral-900 to-neutral-800/80" />
+                        </div>
+                      )}
+
+                      {/* Background Pattern (when no image) */}
+                      {!project.image && (
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                          <div className="absolute inset-0 bg-linear-to-br from-white/5 to-transparent" />
+                        </div>
+                      )}
+
+                      {/* Top Section */}
+                      <div className="relative z-10">
+                        <div className="flex items-start justify-between mb-4">
+                          <span className="text-xs text-neutral-600 font-mono uppercase tracking-wider">
+                            {project.category}
+                          </span>
+                          {project.featured && (
+                            <span className="text-[10px] text-black bg-white px-2 py-1 rounded-full font-medium">
+                              Featured
+                            </span>
+                          )}
+                        </div>
+
+                        <h3 className="text-xl md:text-2xl font-medium text-white mb-2 group-hover:text-neutral-200 transition-colors">
+                          {project.title}
+                        </h3>
+
+                        <p className="text-neutral-500 text-sm leading-relaxed">
+                          {project.description}
+                        </p>
                       </div>
 
-                      {/* Links - Show on Hover */}
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{
-                          opacity: isHovered ? 1 : 0,
-                          y: isHovered ? 0 : 10,
-                        }}
-                        className="flex items-center gap-4"
-                      >
-                        <a
-                          href={project.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
+                      {/* Bottom Section */}
+                      <div className="relative z-10">
+                        {/* Tech Icons */}
+                        <div className="flex items-center gap-3 mb-4">
+                          {project.tech.map((Icon, techIndex) => {
+                            // Check if Icon is a valid React component
+                            if (typeof Icon === 'function') {
+                              return (
+                                <Icon
+                                  key={techIndex}
+                                  size={16}
+                                  className="text-neutral-600 group-hover:text-neutral-400 transition-colors"
+                                />
+                              );
+                            }
+                            return null;
+                          })}
+                        </div>
+
+                        {/* Links - Show on Hover */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{
+                            opacity: isHovered ? 1 : 0,
+                            y: isHovered ? 0 : 10,
+                          }}
+                          className="flex items-center gap-4"
                         >
-                          <FaGithub size={14} />
-                          Code
-                        </a>
-                        <a
-                          href={project.demo}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
-                        >
-                          <FaExternalLinkAlt size={12} />
-                          Demo
-                        </a>
-                      </motion.div>
-                    </div>
-                  </motion.div>
+                          <span
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open(project.github, '_blank');
+                            }}
+                            className="flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
+                          >
+                            <FaGithub size={14} />
+                            Code
+                          </span>
+                          {project.demo && (
+                            <span
+                              onClick={(e) => {
+                                e.preventDefault();
+                                window.open(project.demo, '_blank');
+                              }}
+                              className="flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
+                            >
+                              <FaExternalLinkAlt size={12} />
+                              Demo
+                            </span>
+                          )}
+                          <span className="text-sm text-neutral-500">
+                            Click for details →
+                          </span>
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  </Link>
                 </motion.div>
               );
             })}

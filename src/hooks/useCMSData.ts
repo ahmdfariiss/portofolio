@@ -2,12 +2,7 @@
 
 import { useMemo } from 'react';
 import { useCMSStore } from '@/store/cms-store';
-import {
-  FaCode,
-  FaLightbulb,
-  FaRocket,
-  FaUsers,
-} from 'react-icons/fa';
+import { FaCode, FaLightbulb, FaRocket, FaUsers } from 'react-icons/fa';
 import {
   SiReact,
   SiNextdotjs,
@@ -28,7 +23,12 @@ const defaultSkillsData = [
   { name: 'React', icon: SiReact, level: 90, category: 'frontend' },
   { name: 'Next.js', icon: SiNextdotjs, level: 85, category: 'frontend' },
   { name: 'TypeScript', icon: SiTypescript, level: 85, category: 'frontend' },
-  { name: 'Tailwind CSS', icon: SiTailwindcss, level: 90, category: 'frontend' },
+  {
+    name: 'Tailwind CSS',
+    icon: SiTailwindcss,
+    level: 90,
+    category: 'frontend',
+  },
   { name: 'Node.js', icon: SiNodedotjs, level: 75, category: 'backend' },
   { name: 'MongoDB', icon: SiMongodb, level: 70, category: 'backend' },
   { name: 'Arduino', icon: SiArduino, level: 85, category: 'iot' },
@@ -42,7 +42,8 @@ const defaultSkillsData = [
 const defaultProjectsData = [
   {
     title: 'Smart Home IoT System',
-    description: 'Sistem otomasi rumah pintar menggunakan ESP32 dan sensor-sensor IoT.',
+    description:
+      'Sistem otomasi rumah pintar menggunakan ESP32 dan sensor-sensor IoT.',
     image: '',
     tech: [SiArduino, SiCplusplus, SiFirebase, SiReact],
     github: 'https://github.com',
@@ -53,7 +54,8 @@ const defaultProjectsData = [
   },
   {
     title: 'E-Commerce Platform',
-    description: 'Full-stack e-commerce dengan fitur keranjang belanja dan pembayaran.',
+    description:
+      'Full-stack e-commerce dengan fitur keranjang belanja dan pembayaran.',
     image: '',
     tech: [SiNextdotjs, SiTypescript, SiTailwindcss, SiMongodb],
     github: 'https://github.com',
@@ -80,7 +82,8 @@ const defaultExperiencesData = [
     title: 'Frontend Developer Intern',
     organization: 'Tech Startup XYZ',
     period: 'Jun 2024 - Aug 2024',
-    description: 'Mengembangkan fitur-fitur baru untuk aplikasi web menggunakan React.',
+    description:
+      'Mengembangkan fitur-fitur baru untuk aplikasi web menggunakan React.',
     type: 'work' as const,
     skills: ['React', 'TypeScript', 'Tailwind CSS'],
   },
@@ -112,10 +115,26 @@ const defaultEducationData = [
 ];
 
 const defaultHighlightsData = [
-  { icon: FaCode, title: 'Clean Code', desc: 'Menulis kode yang bersih dan mudah dipahami' },
-  { icon: FaLightbulb, title: 'Problem Solver', desc: 'Senang memecahkan masalah kompleks' },
-  { icon: FaRocket, title: 'Fast Learner', desc: 'Cepat beradaptasi dengan teknologi baru' },
-  { icon: FaUsers, title: 'Team Player', desc: 'Kolaboratif dalam tim dan komunikatif' },
+  {
+    icon: FaCode,
+    title: 'Clean Code',
+    desc: 'Menulis kode yang bersih dan mudah dipahami',
+  },
+  {
+    icon: FaLightbulb,
+    title: 'Problem Solver',
+    desc: 'Senang memecahkan masalah kompleks',
+  },
+  {
+    icon: FaRocket,
+    title: 'Fast Learner',
+    desc: 'Cepat beradaptasi dengan teknologi baru',
+  },
+  {
+    icon: FaUsers,
+    title: 'Team Player',
+    desc: 'Kolaboratif dalam tim dan komunikatif',
+  },
 ];
 
 const defaultStatsData = [
@@ -123,6 +142,33 @@ const defaultStatsData = [
   { value: '5', label: 'Semester' },
   { value: '3.75', label: 'GPA' },
   { value: '500+', label: 'Commits' },
+];
+
+const defaultCertificatesData = [
+  {
+    id: 'cert1',
+    name: 'AWS Cloud Practitioner',
+    issuer: 'Amazon Web Services',
+    image: '',
+    date: '2024',
+    credentialUrl: 'https://aws.amazon.com/verification',
+  },
+  {
+    id: 'cert2',
+    name: 'React Developer Certificate',
+    issuer: 'Meta',
+    image: '',
+    date: '2024',
+    credentialUrl: 'https://coursera.org/verify',
+  },
+  {
+    id: 'cert3',
+    name: 'IoT Fundamentals',
+    issuer: 'Cisco Networking Academy',
+    image: '',
+    date: '2023',
+    credentialUrl: '',
+  },
 ];
 
 // Map CMS data to portfolio format
@@ -267,4 +313,99 @@ export function useCMSStats() {
 export function useCMSSettings() {
   const settings = useCMSStore((state) => state.settings);
   return settings;
+}
+
+export function useCMSCertificates() {
+  const cmsCertificates = useCMSStore((state) => state.certificates);
+
+  return useMemo(() => {
+    // Return default data if no CMS data
+    if (!cmsCertificates || cmsCertificates.length === 0) {
+      return defaultCertificatesData;
+    }
+
+    return cmsCertificates.map((cert) => ({
+      id: cert.id,
+      name: cert.name,
+      issuer: cert.issuer,
+      image: cert.image || '',
+      date: cert.date,
+      credentialUrl: cert.credentialUrl || '',
+    }));
+  }, [cmsCertificates]);
+}
+
+// Get project by ID for detail page
+export function useCMSProjectById(id: string) {
+  const cmsProjects = useCMSStore((state) => state.projects);
+
+  return useMemo(() => {
+    const project = cmsProjects.find((p) => p.id === id);
+    if (!project) return null;
+
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const siIcons = require('react-icons/si');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const faIcons = require('react-icons/fa');
+
+    return {
+      id: project.id,
+      title: project.title,
+      description: project.description,
+      fullDescription: project.fullDescription || project.description,
+      image: project.image || '',
+      gallery: project.gallery || [],
+      tech: project.tech.map((iconName: string) => {
+        return siIcons[iconName] || faIcons[iconName] || siIcons.SiCode;
+      }),
+      techNames: project.tech,
+      features: project.features || [],
+      challenges: project.challenges || '',
+      solutions: project.solutions || '',
+      github: project.github,
+      demo: project.demo,
+      category: project.category,
+      size: project.size as 'large' | 'medium' | 'small',
+      featured: project.featured || false,
+      createdAt: project.createdAt,
+    };
+  }, [cmsProjects, id]);
+}
+
+// Get all projects with ID for linking
+export function useCMSProjectsWithId() {
+  const cmsProjects = useCMSStore((state) => state.projects);
+
+  return useMemo(() => {
+    // Return default data with IDs if no CMS data
+    if (!cmsProjects || cmsProjects.length === 0) {
+      return defaultProjectsData.map((project, index) => ({
+        ...project,
+        id: `default-${index}`,
+      }));
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const siIcons = require('react-icons/si');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const faIcons = require('react-icons/fa');
+
+    return cmsProjects.map((project) => ({
+      id: project.id,
+      title: project.title,
+      description: project.description,
+      image: project.image || '',
+      tech: project.tech
+        .map((iconName: string) => {
+          const icon = siIcons[iconName] || faIcons[iconName];
+          return icon || null; // Return null instead of undefined icon
+        })
+        .filter(Boolean), // Filter out null values
+      github: project.github,
+      demo: project.demo,
+      category: project.category,
+      size: project.size as 'large' | 'medium' | 'small',
+      featured: project.featured || false,
+    }));
+  }, [cmsProjects]);
 }

@@ -119,14 +119,14 @@ export default function About() {
                       repeat: Infinity,
                       ease: 'linear',
                     }}
-                    className="w-32 h-32 border border-dashed border-white/10 rounded-full"
+                    className="w-56 h-56 border border-dashed border-white/10 rounded-full"
                   />
                 </div>
 
                 {/* Avatar */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   {profile.avatar ? (
-                    <div className="w-24 h-24 rounded-full bg-neutral-900 border border-white/20 overflow-hidden relative">
+                    <div className="w-48 h-48 rounded-full bg-neutral-900 border border-white/20 overflow-hidden relative">
                       <Image
                         src={profile.avatar}
                         alt={profile.name}
@@ -135,7 +135,7 @@ export default function About() {
                       />
                     </div>
                   ) : (
-                    <div className="w-24 h-24 rounded-full bg-neutral-900 border border-white/20 flex items-center justify-center text-4xl">
+                    <div className="w-48 h-48 rounded-full bg-neutral-900 border border-white/20 flex items-center justify-center text-6xl">
                       👨‍💻
                     </div>
                   )}

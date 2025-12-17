@@ -26,6 +26,7 @@ const menuItems = [
   { href: '/admin/experiences', label: 'Experiences', icon: HiBriefcase },
   { href: '/admin/education', label: 'Education', icon: HiAcademicCap },
   { href: '/admin/skills', label: 'Skills', icon: HiLightningBolt },
+  { href: '/admin/certificates', label: 'Certificates', icon: HiAcademicCap },
   { href: '/admin/settings', label: 'Settings', icon: HiCog },
 ];
 

@@ -21,9 +21,14 @@ type FormData = Omit<CMSProject, 'id' | 'createdAt'>;
 const defaultForm: FormData = {
   title: '',
   description: '',
+  fullDescription: '',
   image: '',
+  gallery: [],
   category: 'Web',
   tech: [],
+  features: [],
+  challenges: '',
+  solutions: '',
   github: '',
   demo: '',
   featured: false,
@@ -70,9 +75,14 @@ export default function ProjectsPage() {
     setFormData({
       title: project.title,
       description: project.description,
+      fullDescription: project.fullDescription || '',
       image: project.image || '',
+      gallery: project.gallery || [],
       category: project.category,
       tech: project.tech,
+      features: project.features || [],
+      challenges: project.challenges || '',
+      solutions: project.solutions || '',
       github: project.github,
       demo: project.demo,
       featured: project.featured,
@@ -335,7 +345,7 @@ export default function ProjectsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-neutral-400 mb-2">
-                    Description
+                    Description (Singkat)
                   </label>
                   <textarea
                     value={formData.description}
@@ -346,7 +356,26 @@ export default function ProjectsPage() {
                       }))
                     }
                     required
-                    rows={3}
+                    rows={2}
+                    placeholder="Deskripsi singkat untuk card..."
+                    className="w-full px-4 py-3 bg-black border border-neutral-800 rounded-xl text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-400 mb-2">
+                    Full Description (Detail Page)
+                  </label>
+                  <textarea
+                    value={formData.fullDescription || ''}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        fullDescription: e.target.value,
+                      }))
+                    }
+                    rows={4}
+                    placeholder="Deskripsi lengkap untuk halaman detail project..."
                     className="w-full px-4 py-3 bg-black border border-neutral-800 rounded-xl text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/20"
                   />
                 </div>
@@ -483,6 +512,72 @@ export default function ProjectsPage() {
                   />
                   <span className="text-white">Featured Project</span>
                 </label>
+
+                {/* Additional Detail Fields */}
+                <div className="border-t border-neutral-800 pt-4 mt-4">
+                  <h3 className="text-sm font-medium text-neutral-300 mb-4">
+                    Detail Page (Opsional)
+                  </h3>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-400 mb-2">
+                        Fitur Utama (satu per baris)
+                      </label>
+                      <textarea
+                        value={formData.features?.join('\n') || ''}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            features: e.target.value
+                              .split('\n')
+                              .filter((f) => f.trim()),
+                          }))
+                        }
+                        rows={3}
+                        placeholder="Fitur 1&#10;Fitur 2&#10;Fitur 3"
+                        className="w-full px-4 py-3 bg-black border border-neutral-800 rounded-xl text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/20"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-400 mb-2">
+                          Tantangan
+                        </label>
+                        <textarea
+                          value={formData.challenges || ''}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              challenges: e.target.value,
+                            }))
+                          }
+                          rows={3}
+                          placeholder="Tantangan yang dihadapi..."
+                          className="w-full px-4 py-3 bg-black border border-neutral-800 rounded-xl text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/20"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-400 mb-2">
+                          Solusi
+                        </label>
+                        <textarea
+                          value={formData.solutions || ''}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              solutions: e.target.value,
+                            }))
+                          }
+                          rows={3}
+                          placeholder="Solusi yang diterapkan..."
+                          className="w-full px-4 py-3 bg-black border border-neutral-800 rounded-xl text-white resize-none focus:outline-none focus:ring-2 focus:ring-white/20"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 <div className="flex gap-3 pt-4">
                   <button

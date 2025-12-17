@@ -13,6 +13,7 @@ import type {
   CMSHighlight,
   CMSStat,
   CMSSettings,
+  CMSCertificate,
 } from '@/types/cms';
 
 // Generate unique ID
@@ -53,7 +54,8 @@ const defaultProjects: CMSProject[] = [
   {
     id: 'p1',
     title: 'Smart Home IoT System',
-    description: 'Sistem otomasi rumah pintar menggunakan ESP32 dan sensor-sensor IoT. Dapat mengontrol lampu, suhu, dan keamanan rumah melalui aplikasi mobile.',
+    description:
+      'Sistem otomasi rumah pintar menggunakan ESP32 dan sensor-sensor IoT. Dapat mengontrol lampu, suhu, dan keamanan rumah melalui aplikasi mobile.',
     image: '',
     tech: ['SiArduino', 'SiCplusplus', 'SiFirebase', 'SiReact'],
     github: 'https://github.com',
@@ -66,7 +68,8 @@ const defaultProjects: CMSProject[] = [
   {
     id: 'p2',
     title: 'E-Commerce Platform',
-    description: 'Full-stack e-commerce dengan fitur keranjang belanja, pembayaran, dan manajemen produk.',
+    description:
+      'Full-stack e-commerce dengan fitur keranjang belanja, pembayaran, dan manajemen produk.',
     image: '',
     tech: ['SiNextdotjs', 'SiTypescript', 'SiTailwindcss', 'SiMongodb'],
     github: 'https://github.com',
@@ -79,7 +82,8 @@ const defaultProjects: CMSProject[] = [
   {
     id: 'p3',
     title: 'Weather Monitoring Station',
-    description: 'Stasiun pemantau cuaca real-time dengan sensor BME280 dan tampilan web dashboard.',
+    description:
+      'Stasiun pemantau cuaca real-time dengan sensor BME280 dan tampilan web dashboard.',
     image: '',
     tech: ['SiArduino', 'SiPython', 'SiMongodb'],
     github: 'https://github.com',
@@ -98,7 +102,8 @@ const defaultExperiences: CMSExperience[] = [
     title: 'Frontend Developer Intern',
     organization: 'Tech Startup XYZ',
     period: 'Jun 2024 - Aug 2024',
-    description: 'Mengembangkan fitur-fitur baru untuk aplikasi web menggunakan React dan TypeScript.',
+    description:
+      'Mengembangkan fitur-fitur baru untuk aplikasi web menggunakan React dan TypeScript.',
     skills: ['React', 'TypeScript', 'Tailwind CSS'],
     createdAt: new Date().toISOString(),
   },
@@ -107,7 +112,8 @@ const defaultExperiences: CMSExperience[] = [
     title: 'IoT Research Assistant',
     organization: 'Laboratorium Komputer',
     period: 'Feb 2024 - Present',
-    description: 'Melakukan riset dan pengembangan proyek IoT untuk smart campus.',
+    description:
+      'Melakukan riset dan pengembangan proyek IoT untuk smart campus.',
     skills: ['Arduino', 'ESP32', 'MQTT', 'Python'],
     createdAt: new Date().toISOString(),
   },
@@ -138,25 +144,93 @@ const defaultEducation: CMSEducation[] = [
 // Default Skills
 const defaultSkills: CMSSkill[] = [
   { id: 's1', name: 'React', icon: 'SiReact', level: 90, category: 'frontend' },
-  { id: 's2', name: 'Next.js', icon: 'SiNextdotjs', level: 85, category: 'frontend' },
-  { id: 's3', name: 'TypeScript', icon: 'SiTypescript', level: 85, category: 'frontend' },
-  { id: 's4', name: 'Tailwind CSS', icon: 'SiTailwindcss', level: 90, category: 'frontend' },
-  { id: 's5', name: 'Node.js', icon: 'SiNodedotjs', level: 75, category: 'backend' },
-  { id: 's6', name: 'MongoDB', icon: 'SiMongodb', level: 70, category: 'backend' },
+  {
+    id: 's2',
+    name: 'Next.js',
+    icon: 'SiNextdotjs',
+    level: 85,
+    category: 'frontend',
+  },
+  {
+    id: 's3',
+    name: 'TypeScript',
+    icon: 'SiTypescript',
+    level: 85,
+    category: 'frontend',
+  },
+  {
+    id: 's4',
+    name: 'Tailwind CSS',
+    icon: 'SiTailwindcss',
+    level: 90,
+    category: 'frontend',
+  },
+  {
+    id: 's5',
+    name: 'Node.js',
+    icon: 'SiNodedotjs',
+    level: 75,
+    category: 'backend',
+  },
+  {
+    id: 's6',
+    name: 'MongoDB',
+    icon: 'SiMongodb',
+    level: 70,
+    category: 'backend',
+  },
   { id: 's7', name: 'Arduino', icon: 'SiArduino', level: 85, category: 'iot' },
-  { id: 's8', name: 'Python', icon: 'SiPython', level: 80, category: 'backend' },
-  { id: 's9', name: 'Firebase', icon: 'SiFirebase', level: 75, category: 'backend' },
+  {
+    id: 's8',
+    name: 'Python',
+    icon: 'SiPython',
+    level: 80,
+    category: 'backend',
+  },
+  {
+    id: 's9',
+    name: 'Firebase',
+    icon: 'SiFirebase',
+    level: 75,
+    category: 'backend',
+  },
   { id: 's10', name: 'Git', icon: 'SiGit', level: 85, category: 'tools' },
   { id: 's11', name: 'Figma', icon: 'SiFigma', level: 70, category: 'tools' },
-  { id: 's12', name: 'C++', icon: 'SiCplusplus', level: 75, category: 'backend' },
+  {
+    id: 's12',
+    name: 'C++',
+    icon: 'SiCplusplus',
+    level: 75,
+    category: 'backend',
+  },
 ];
 
 // Default Highlights
 const defaultHighlights: CMSHighlight[] = [
-  { id: 'h1', icon: 'FaCode', title: 'Clean Code', desc: 'Menulis kode yang bersih dan mudah dipahami' },
-  { id: 'h2', icon: 'FaLightbulb', title: 'Problem Solver', desc: 'Senang memecahkan masalah kompleks' },
-  { id: 'h3', icon: 'FaRocket', title: 'Fast Learner', desc: 'Cepat beradaptasi dengan teknologi baru' },
-  { id: 'h4', icon: 'FaUsers', title: 'Team Player', desc: 'Kolaboratif dalam tim dan komunikatif' },
+  {
+    id: 'h1',
+    icon: 'FaCode',
+    title: 'Clean Code',
+    desc: 'Menulis kode yang bersih dan mudah dipahami',
+  },
+  {
+    id: 'h2',
+    icon: 'FaLightbulb',
+    title: 'Problem Solver',
+    desc: 'Senang memecahkan masalah kompleks',
+  },
+  {
+    id: 'h3',
+    icon: 'FaRocket',
+    title: 'Fast Learner',
+    desc: 'Cepat beradaptasi dengan teknologi baru',
+  },
+  {
+    id: 'h4',
+    icon: 'FaUsers',
+    title: 'Team Player',
+    desc: 'Kolaboratif dalam tim dan komunikatif',
+  },
 ];
 
 // Default Stats
@@ -165,6 +239,37 @@ const defaultStats: CMSStat[] = [
   { id: 'st2', value: '5', label: 'Semester' },
   { id: 'st3', value: '3.75', label: 'GPA' },
   { id: 'st4', value: '500+', label: 'Commits' },
+];
+
+// Default Certificates
+const defaultCertificates: CMSCertificate[] = [
+  {
+    id: 'cert1',
+    name: 'AWS Cloud Practitioner',
+    issuer: 'Amazon Web Services',
+    image: '',
+    date: '2024',
+    credentialUrl: 'https://aws.amazon.com/verification',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'cert2',
+    name: 'React Developer Certificate',
+    issuer: 'Meta',
+    image: '',
+    date: '2024',
+    credentialUrl: 'https://coursera.org/verify',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'cert3',
+    name: 'IoT Fundamentals',
+    issuer: 'Cisco Networking Academy',
+    image: '',
+    date: '2023',
+    credentialUrl: '',
+    createdAt: new Date().toISOString(),
+  },
 ];
 
 // ==========================================
@@ -183,6 +288,7 @@ interface CMSState {
   skills: CMSSkill[];
   highlights: CMSHighlight[];
   stats: CMSStat[];
+  certificates: CMSCertificate[];
   settings: CMSSettings;
 
   // Auth Actions
@@ -218,6 +324,11 @@ interface CMSState {
   // Stat Actions
   updateStats: (stats: CMSStat[]) => void;
 
+  // Certificate Actions
+  addCertificate: (data: Omit<CMSCertificate, 'id' | 'createdAt'>) => void;
+  updateCertificate: (id: string, data: Partial<CMSCertificate>) => void;
+  deleteCertificate: (id: string) => void;
+
   // Settings Actions
   updateSettings: (data: Partial<CMSSettings>) => void;
 }
@@ -241,6 +352,7 @@ export const useCMSStore = create<CMSState>()(
       skills: defaultSkills,
       highlights: defaultHighlights,
       stats: defaultStats,
+      certificates: defaultCertificates,
       settings: defaultSettings,
 
       // Auth Actions
@@ -344,6 +456,27 @@ export const useCMSStore = create<CMSState>()(
 
       // Stat Actions
       updateStats: (stats) => set({ stats }),
+
+      // Certificate Actions
+      addCertificate: (data) =>
+        set((state) => ({
+          certificates: [
+            { ...data, id: generateId(), createdAt: new Date().toISOString() },
+            ...state.certificates,
+          ],
+        })),
+
+      updateCertificate: (id, data) =>
+        set((state) => ({
+          certificates: state.certificates.map((c) =>
+            c.id === id ? { ...c, ...data } : c
+          ),
+        })),
+
+      deleteCertificate: (id) =>
+        set((state) => ({
+          certificates: state.certificates.filter((c) => c.id !== id),
+        })),
 
       // Settings Actions
       updateSettings: (data) =>

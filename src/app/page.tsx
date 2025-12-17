@@ -6,6 +6,7 @@ import {
   Skills,
   Experience,
   Projects,
+  Certificates,
   Contact,
   Footer,
   LoadingScreen,
@@ -41,6 +42,9 @@ export default function Home() {
 
       {/* Projects Section */}
       <Projects />
+
+      {/* Certificates Section */}
+      <Certificates />
 
       {/* Contact Section */}
       <Contact />

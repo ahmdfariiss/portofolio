@@ -24,9 +24,14 @@ export interface CMSProject {
   id: string;
   title: string;
   description: string;
+  fullDescription?: string; // Detail lengkap project
   image: string; // URL atau base64 image
+  gallery?: string[]; // Multiple images for detail page
   category: 'Web' | 'IoT' | 'Other';
   tech: string[];
+  features?: string[]; // Fitur-fitur project
+  challenges?: string; // Tantangan dalam pembuatan
+  solutions?: string; // Solusi yang diterapkan
   github: string;
   demo: string;
   featured: boolean;
@@ -78,4 +83,15 @@ export interface CMSStat {
 export interface CMSSettings {
   siteName: string;
   siteDescription: string;
+}
+
+// Certificate Type
+export interface CMSCertificate {
+  id: string;
+  name: string;
+  issuer: string; // Instansi penerbit
+  image: string; // Gambar sertifikat
+  date: string; // Tanggal diterbitkan
+  credentialUrl?: string; // Link verifikasi (optional)
+  createdAt: string;
 }
