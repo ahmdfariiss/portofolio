@@ -2,21 +2,79 @@
 
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
-import { useRef, useState } from 'react';
-import { useCMSSkills } from '@/hooks/useCMSData';
+import { useRef, useState, useEffect } from 'react';
+import { 
+  SiNextdotjs, SiReact, SiTypescript, SiTailwindcss, 
+  SiNodedotjs, SiPython, SiJavascript, SiHtml5,
+  SiCss3, SiGit, SiMongodb, SiPostgresql
+} from 'react-icons/si';
+import { FaCode } from 'react-icons/fa';
+import { supabase } from '@/lib/supabase';
+
+interface SkillData {
+  id: string;
+  name: string;
+  level: number;
+  category: string;
+  icon: string;
+}
+
+// Default skills
+const defaultSkills: SkillData[] = [
+  { id: '1', name: 'Next.js', level: 80, category: 'frontend', icon: 'SiNextdotjs' },
+  { id: '2', name: 'React', level: 85, category: 'frontend', icon: 'SiReact' },
+  { id: '3', name: 'TypeScript', level: 75, category: 'frontend', icon: 'SiTypescript' },
+  { id: '4', name: 'Tailwind CSS', level: 90, category: 'frontend', icon: 'SiTailwindcss' },
+];
+
+// Icon mapping
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  SiNextdotjs,
+  SiReact,
+  SiTypescript,
+  SiTailwindcss,
+  SiNodedotjs,
+  SiPython,
+  SiJavascript,
+  SiHtml5,
+  SiCss3,
+  SiGit,
+  SiMongodb,
+  SiPostgresql,
+  FaCode,
+};
 
 export default function Skills() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const [hoveredSkill, setHoveredSkill] = useState<string | null>(null);
-  const skills = useCMSSkills();
+  const [skills, setSkills] = useState<SkillData[]>(defaultSkills);
+
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const { data } = await supabase
+          .from('skills')
+          .select('*')
+          .order('order_index');
+        
+        if (data && data.length > 0) {
+          setSkills(data);
+        }
+      } catch (error) {
+        console.error('Skills fetch error:', error);
+        // Keep default data on error
+      }
+    };
+
+    fetchSkills();
+  }, []);
 
   return (
     <section id="skills" className="py-32 relative bg-neutral-950/50">
-      {/* LAYOUT: Full-Width Staggered Grid with Large Title */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div ref={ref}>
-          {/* Header - Right Aligned */}
+          {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-20">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -34,116 +92,97 @@ export default function Skills() {
             </motion.div>
 
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="text-neutral-500 max-w-sm lg:text-right"
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : {}}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="text-neutral-500 max-w-md text-right hidden lg:block"
             >
-              Constantly learning and adapting to new technologies to build
-              better solutions.
+              Constantly learning and adapting to new technologies to build better solutions.
             </motion.p>
           </div>
 
-          {/* Skills Grid - Masonry-like Stagger */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {/* Skills Grid */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
+          >
             {skills.map((skill, index) => {
-              const isHovered = hoveredSkill === skill.name;
-              // Create visual interest with varying heights
-              const isLarge = index % 5 === 0;
+              const isHovered = hoveredSkill === skill.id;
+              const IconComp = iconMap[skill.icon] || FaCode;
 
               return (
                 <motion.div
-                  key={skill.name}
-                  initial={{ opacity: 0, y: 30 }}
+                  key={skill.id}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ delay: 0.1 + index * 0.05, duration: 0.4 }}
-                  onHoverStart={() => setHoveredSkill(skill.name)}
-                  onHoverEnd={() => setHoveredSkill(null)}
-                  className={`group relative ${isLarge ? 'row-span-2' : ''}`}
+                  transition={{ delay: 0.1 + index * 0.05 }}
+                  onMouseEnter={() => setHoveredSkill(skill.id)}
+                  onMouseLeave={() => setHoveredSkill(null)}
+                  className={`group relative flex flex-col items-center justify-center p-6 rounded-2xl border transition-all duration-300 cursor-pointer ${
+                    isHovered
+                      ? 'bg-white/10 border-white/30 scale-105'
+                      : 'bg-white/5 border-white/10 hover:bg-white/10'
+                  }`}
                 >
+                  {/* Icon */}
                   <motion.div
-                    whileHover={{ y: -6 }}
-                    className={`h-full p-6 bg-neutral-900/50 border border-white/5 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-white/20 hover:bg-neutral-900/80 transition-all duration-300 ${
-                      isLarge ? 'min-h-50' : 'min-h-30'
-                    }`}
+                    animate={{
+                      scale: isHovered ? 1.2 : 1,
+                      rotate: isHovered ? 360 : 0,
+                    }}
+                    transition={{ duration: 0.4 }}
+                    className="text-3xl mb-3"
                   >
-                    {/* Icon */}
-                    <motion.div
-                      animate={{
-                        scale: isHovered ? 1.2 : 1,
-                        rotate: isHovered ? 360 : 0,
-                      }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      <skill.icon
-                        size={isLarge ? 40 : 28}
-                        className="text-neutral-400 group-hover:text-white transition-colors duration-300"
-                      />
-                    </motion.div>
+                    <IconComp className="text-neutral-400 group-hover:text-white transition-colors duration-300" />
+                  </motion.div>
 
-                    {/* Name */}
-                    <span className="text-sm text-neutral-400 group-hover:text-white transition-colors">
-                      {skill.name}
-                    </span>
+                  {/* Name */}
+                  <span className="text-sm text-neutral-400 group-hover:text-white transition-colors text-center">
+                    {skill.name}
+                  </span>
 
-                    {/* Level Indicator - Show on Hover */}
+                  {/* Level Indicator */}
+                  <motion.div
+                    initial={{ opacity: 0, scaleX: 0 }}
+                    animate={{
+                      opacity: isHovered ? 1 : 0,
+                      scaleX: isHovered ? 1 : 0,
+                    }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 rounded-b-2xl overflow-hidden"
+                  >
                     <motion.div
-                      initial={{ opacity: 0, scaleX: 0 }}
-                      animate={{
-                        opacity: isHovered ? 1 : 0,
-                        scaleX: isHovered ? 1 : 0,
-                      }}
-                      className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 rounded-b-2xl overflow-hidden"
-                    >
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: isHovered ? `${skill.level}%` : 0 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        className="h-full bg-white"
-                      />
-                    </motion.div>
+                      initial={{ width: 0 }}
+                      animate={{ width: isHovered ? `${skill.level}%` : 0 }}
+                      transition={{ delay: 0.1, duration: 0.5 }}
+                      className="h-full bg-white"
+                    />
                   </motion.div>
                 </motion.div>
               );
             })}
-          </div>
+          </motion.div>
 
-          {/* Bottom Stats */}
+          {/* Category Labels */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="mt-16 pt-16 border-t border-white/5"
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="flex flex-wrap justify-center gap-4 mt-12"
           >
-            <div className="flex flex-wrap justify-center gap-12 md:gap-20">
-              {[
-                { value: `${skills.length}+`, label: 'Technologies' },
-                { value: '3', label: 'Specializations' },
-                { value: '∞', label: 'Learning' },
-              ].map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ delay: 0.9 + index * 0.1 }}
-                  className="text-center"
-                >
-                  <div className="text-3xl md:text-4xl font-bold text-white mb-2">
-                    {stat.value}
-                  </div>
-                  <div className="text-xs text-neutral-600 uppercase tracking-wider">
-                    {stat.label}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            {['Frontend', 'Backend', 'Database', 'Tools'].map((category) => (
+              <span
+                key={category}
+                className="px-4 py-2 text-xs tracking-wider text-neutral-500 border border-white/10 rounded-full"
+              >
+                {category}
+              </span>
+            ))}
           </motion.div>
         </motion.div>
       </div>
-
-      {/* Background Accent */}
-      <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
-      <div className="absolute bottom-0 left-0 w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
     </section>
   );
 }

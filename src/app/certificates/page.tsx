@@ -3,12 +3,12 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { FaCertificate, FaArrowLeft, FaSearch } from 'react-icons/fa';
-import { useCMSCertificates } from '@/hooks/useCMSData';
+import { useSupabaseCertificates } from '@/hooks/useSupabase';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export default function CertificatesPage() {
-  const certificates = useCMSCertificates();
+  const { certificates, loading } = useSupabaseCertificates();
   const [searchTerm, setSearchTerm] = useState('');
 
   // Filter certificates based on search
@@ -32,6 +32,18 @@ export default function CertificatesPage() {
   const sortedYears = Object.keys(groupedByYear).sort((a, b) =>
     b.localeCompare(a)
   );
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-neutral-950 pt-24 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="animate-pulse text-white">
+            Loading certificates...
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-neutral-950 pt-24 pb-16">

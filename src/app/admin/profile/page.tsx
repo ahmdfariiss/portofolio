@@ -3,19 +3,34 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { HiUser, HiSave, HiCheck, HiPhotograph, HiX } from 'react-icons/hi';
-import { useCMSStore } from '@/store/cms-store';
+import { useSupabaseProfile } from '@/hooks/useSupabase';
+import type { DBProfile } from '@/lib/supabase';
 import Image from 'next/image';
 
 export default function ProfilePage() {
-  const { profile, updateProfile } = useCMSStore();
-  const [formData, setFormData] = useState(profile);
+  const { profile, updateProfile, loading } = useSupabaseProfile();
+  const [formData, setFormData] = useState<DBProfile | null>(null);
   const [roleInput, setRoleInput] = useState('');
   const [saved, setSaved] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [initialized, setInitialized] = useState(false);
 
+  // Initialize form data when profile is loaded
   useEffect(() => {
-    setFormData(profile);
-  }, [profile]);
+    if (profile && !initialized) {
+      setFormData(profile);
+      setInitialized(true);
+    }
+  }, [profile, initialized]);
+
+  if (loading || !formData) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-pulse text-white">Loading...</div>
+      </div>
+    );
+  }
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -24,24 +39,23 @@ export default function ProfilePage() {
 
     if (name.startsWith('social.')) {
       const key = name.replace('social.', '');
-      setFormData((prev) => ({
-        ...prev,
-        social: { ...prev.social, [key]: value },
-      }));
+      setFormData({
+        ...formData,
+        social: { ...formData.social, [key]: value },
+      });
     } else if (name === 'bio') {
-      setFormData((prev) => ({
-        ...prev,
+      setFormData({
+        ...formData,
         bio: value.split('\n').filter((line) => line.trim()),
-      }));
+      });
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData({ ...formData, [name]: value });
     }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check file size (max 2MB)
       if (file.size > 2 * 1024 * 1024) {
         alert('Ukuran file maksimal 2MB');
         return;
@@ -49,17 +63,17 @@ export default function ProfilePage() {
 
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData((prev) => ({
-          ...prev,
+        setFormData({
+          ...formData,
           avatar: reader.result as string,
-        }));
+        });
       };
       reader.readAsDataURL(file);
     }
   };
 
   const removeAvatar = () => {
-    setFormData((prev) => ({ ...prev, avatar: '' }));
+    setFormData({ ...formData, avatar: '' });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -67,26 +81,34 @@ export default function ProfilePage() {
 
   const addRole = () => {
     if (roleInput.trim() && !formData.role.includes(roleInput.trim())) {
-      setFormData((prev) => ({
-        ...prev,
-        role: [...prev.role, roleInput.trim()],
-      }));
+      setFormData({
+        ...formData,
+        role: [...formData.role, roleInput.trim()],
+      });
       setRoleInput('');
     }
   };
 
   const removeRole = (role: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      role: prev.role.filter((r) => r !== role),
-    }));
+    setFormData({
+      ...formData,
+      role: formData.role.filter((r) => r !== role),
+    });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateProfile(formData);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setIsSubmitting(true);
+    try {
+      await updateProfile(formData);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('Gagal menyimpan profile');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -364,12 +386,13 @@ export default function ProfilePage() {
         <div className="flex items-center gap-4">
           <motion.button
             type="submit"
+            disabled={isSubmitting}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-xl font-medium hover:bg-neutral-200 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-xl font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50"
           >
             <HiSave size={20} />
-            Simpan
+            {isSubmitting ? 'Menyimpan...' : 'Simpan'}
           </motion.button>
           {saved && (
             <motion.span

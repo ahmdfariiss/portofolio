@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
 import { FaGithub, FaExternalLinkAlt } from 'react-icons/fa';
-import { useCMSProjectsWithId } from '@/hooks/useCMSData';
+import { useSupabaseProjects } from '@/hooks/useSupabase';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -13,13 +13,30 @@ export default function Projects() {
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const [activeFilter, setActiveFilter] = useState('All');
   const [hoveredProject, setHoveredProject] = useState<number | null>(null);
-  const projects = useCMSProjectsWithId();
+  const { projects, loading } = useSupabaseProjects();
 
   const filters = ['All', 'Web', 'IoT'];
   const filteredProjects =
     activeFilter === 'All'
       ? projects
       : projects.filter((p) => p.category === activeFilter);
+
+  if (loading) {
+    return (
+      <section id="projects" className="py-32 relative bg-neutral-950/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="animate-pulse">
+            <div className="h-8 bg-neutral-800 rounded w-48 mx-auto mb-4"></div>
+            <div className="h-12 bg-neutral-800 rounded w-64 mx-auto"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (projects.length === 0) {
+    return null;
+  }
 
   return (
     <section id="projects" className="py-32 relative bg-neutral-950/50">
@@ -70,16 +87,10 @@ export default function Projects() {
           {/* Bento Grid */}
           <motion.div
             layout
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-[200px]"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {filteredProjects.map((project, index) => {
               const isHovered = hoveredProject === index;
-              const gridClass =
-                project.size === 'large'
-                  ? 'md:col-span-2 md:row-span-2'
-                  : project.size === 'medium'
-                  ? 'md:row-span-2'
-                  : '';
 
               return (
                 <motion.div
@@ -91,78 +102,78 @@ export default function Projects() {
                   transition={{ delay: index * 0.05 }}
                   onHoverStart={() => setHoveredProject(index)}
                   onHoverEnd={() => setHoveredProject(null)}
-                  className={`group relative ${gridClass}`}
+                  className="group relative"
                 >
                   <Link href={project.id ? `/project/${project.id}` : '#'}>
                     <motion.div
                       whileHover={{ scale: 0.98 }}
-                      className="h-full bg-neutral-900/50 border border-white/5 rounded-2xl p-6 flex flex-col justify-between overflow-hidden hover:border-white/20 transition-all duration-300 cursor-pointer"
+                      className="h-full bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300 cursor-pointer"
                     >
-                      {/* Project Image - Clear Display */}
-                      {project.image && (
-                        <div className="absolute top-4 right-4 w-40 h-24 md:w-56 md:h-32 lg:w-64 lg:h-36 z-10 rounded-xl overflow-hidden border border-white/10 shadow-lg bg-white">
-                          <Image
-                            src={project.image}
-                            alt={project.title}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      )}
-
-                      {/* Subtle Background Gradient */}
-                      {project.image && (
-                        <div className="absolute inset-0 z-0">
-                          <div className="absolute inset-0 bg-linear-to-br from-neutral-900 via-neutral-900 to-neutral-800/80" />
-                        </div>
-                      )}
-
-                      {/* Background Pattern (when no image) */}
-                      {!project.image && (
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                          <div className="absolute inset-0 bg-linear-to-br from-white/5 to-transparent" />
-                        </div>
-                      )}
-
-                      {/* Top Section */}
-                      <div className="relative z-10">
-                        <div className="flex items-start justify-between mb-4">
-                          <span className="text-xs text-neutral-600 font-mono uppercase tracking-wider">
+                      {/* Project Image - Large & Prominent */}
+                      <div className="relative w-full aspect-video bg-neutral-800 overflow-hidden">
+                        {project.image ? (
+                          <>
+                            <Image
+                              src={project.image}
+                              alt={project.title}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            {/* Overlay gradient */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent opacity-60" />
+                          </>
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-4xl text-neutral-700">📁</span>
+                          </div>
+                        )}
+                        
+                        {/* Category Badge */}
+                        <div className="absolute top-3 left-3">
+                          <span className="text-xs text-white/80 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full font-mono uppercase tracking-wider">
                             {project.category}
                           </span>
-                          {project.featured && (
-                            <span className="text-[10px] text-black bg-white px-2 py-1 rounded-full font-medium">
+                        </div>
+                        
+                        {/* Featured Badge */}
+                        {project.featured && (
+                          <div className="absolute top-3 right-3">
+                            <span className="text-xs text-black bg-white px-3 py-1 rounded-full font-medium">
                               Featured
                             </span>
-                          )}
-                        </div>
+                          </div>
+                        )}
+                      </div>
 
-                        <h3 className="text-xl md:text-2xl font-medium text-white mb-2 group-hover:text-neutral-200 transition-colors">
+                      {/* Content Section */}
+                      <div className="p-5">
+                        <h3 className="text-lg md:text-xl font-semibold text-white mb-2 group-hover:text-neutral-200 transition-colors">
                           {project.title}
                         </h3>
 
-                        <p className="text-neutral-500 text-sm leading-relaxed">
+                        <p className="text-neutral-500 text-sm leading-relaxed mb-4 line-clamp-2">
                           {project.description}
                         </p>
-                      </div>
 
-                      {/* Bottom Section */}
-                      <div className="relative z-10">
                         {/* Tech Icons */}
                         <div className="flex items-center gap-3 mb-4">
-                          {project.tech.map((Icon, techIndex) => {
-                            // Check if Icon is a valid React component
-                            if (typeof Icon === 'function') {
-                              return (
-                                <Icon
-                                  key={techIndex}
-                                  size={16}
-                                  className="text-neutral-600 group-hover:text-neutral-400 transition-colors"
-                                />
-                              );
-                            }
-                            return null;
-                          })}
+                          {project.techIcons &&
+                            project.techIcons.slice(0, 5).map((Icon, techIndex) => {
+                              if (Icon && typeof Icon === 'function') {
+                                return (
+                                  <Icon
+                                    key={techIndex}
+                                    className="text-neutral-600 group-hover:text-neutral-400 transition-colors"
+                                  />
+                                );
+                              }
+                              return null;
+                            })}
+                          {project.techIcons && project.techIcons.length > 5 && (
+                            <span className="text-xs text-neutral-600">
+                              +{project.techIcons.length - 5}
+                            </span>
+                          )}
                         </div>
 
                         {/* Links - Show on Hover */}
@@ -172,23 +183,27 @@ export default function Projects() {
                             opacity: isHovered ? 1 : 0,
                             y: isHovered ? 0 : 10,
                           }}
-                          className="flex items-center gap-4"
+                          className="flex items-center gap-4 pt-3 border-t border-white/5"
                         >
-                          <span
-                            onClick={(e) => {
-                              e.preventDefault();
-                              window.open(project.github, '_blank');
-                            }}
-                            className="flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
-                          >
-                            <FaGithub size={14} />
-                            Code
-                          </span>
+                          {project.github && (
+                            <span
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (project.github)
+                                  window.open(project.github, '_blank');
+                              }}
+                              className="flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
+                            >
+                              <FaGithub size={14} />
+                              Code
+                            </span>
+                          )}
                           {project.demo && (
                             <span
                               onClick={(e) => {
                                 e.preventDefault();
-                                window.open(project.demo, '_blank');
+                                if (project.demo)
+                                  window.open(project.demo, '_blank');
                               }}
                               className="flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
                             >
@@ -196,8 +211,8 @@ export default function Projects() {
                               Demo
                             </span>
                           )}
-                          <span className="text-sm text-neutral-500">
-                            Click for details →
+                          <span className="ml-auto text-sm text-neutral-500">
+                            Details →
                           </span>
                         </motion.div>
                       </div>

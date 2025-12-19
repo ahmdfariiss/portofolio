@@ -10,27 +10,29 @@ import {
   HiX,
   HiCheck,
 } from 'react-icons/hi';
-import { useCMSStore } from '@/store/cms-store';
-import type { CMSEducation } from '@/types/cms';
+import { useSupabaseEducation } from '@/hooks/useSupabase';
+import type { DBEducation } from '@/lib/supabase';
 
-type FormData = Omit<CMSEducation, 'id' | 'createdAt'>;
+type FormData = Omit<DBEducation, 'id' | 'created_at'>;
 
 const defaultForm: FormData = {
-  title: '',
+  degree: '',
   institution: '',
   period: '',
   description: '',
   achievements: [],
+  order_index: 0,
 };
 
 export default function EducationPage() {
-  const { education, addEducation, updateEducation, deleteEducation } =
-    useCMSStore();
+  const { education, addEducation, updateEducation, deleteEducation, loading } =
+    useSupabaseEducation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>(defaultForm);
   const [achievementInput, setAchievementInput] = useState('');
   const [saved, setSaved] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const openCreateModal = () => {
     setEditingId(null);
@@ -38,33 +40,47 @@ export default function EducationPage() {
     setIsModalOpen(true);
   };
 
-  const openEditModal = (edu: CMSEducation) => {
+  const openEditModal = (edu: (typeof education)[0]) => {
     setEditingId(edu.id);
     setFormData({
-      title: edu.title,
+      degree: edu.degree,
       institution: edu.institution,
       period: edu.period,
       description: edu.description,
       achievements: edu.achievements,
+      order_index: edu.order_index || 0,
     });
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      updateEducation(editingId, formData);
-    } else {
-      addEducation(formData);
+    setIsSubmitting(true);
+    try {
+      if (editingId) {
+        await updateEducation(editingId, formData);
+      } else {
+        await addEducation(formData);
+      }
+      setIsModalOpen(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error('Error saving education:', error);
+      alert('Gagal menyimpan pendidikan');
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsModalOpen(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Apakah Anda yakin ingin menghapus pendidikan ini?')) {
-      deleteEducation(id);
+      try {
+        await deleteEducation(id);
+      } catch (error) {
+        console.error('Error deleting education:', error);
+        alert('Gagal menghapus pendidikan');
+      }
     }
   };
 
@@ -87,6 +103,14 @@ export default function EducationPage() {
       achievements: prev.achievements.filter((a) => a !== achievement),
     }));
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-pulse text-white">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -144,7 +168,7 @@ export default function EducationPage() {
               <div className="flex-1">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-semibold text-white">{edu.title}</h3>
+                    <h3 className="font-semibold text-white">{edu.degree}</h3>
                     <p className="text-neutral-400">{edu.institution}</p>
                     <p className="text-neutral-500 text-sm">{edu.period}</p>
                   </div>
@@ -220,11 +244,11 @@ export default function EducationPage() {
                   </label>
                   <input
                     type="text"
-                    value={formData.title}
+                    value={formData.degree}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        title: e.target.value,
+                        degree: e.target.value,
                       }))
                     }
                     required
@@ -337,15 +361,21 @@ export default function EducationPage() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="flex-1 px-4 py-3 bg-neutral-800 text-white rounded-xl font-medium hover:bg-neutral-700 transition-colors"
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-3 bg-neutral-800 text-white rounded-xl font-medium hover:bg-neutral-700 transition-colors disabled:opacity-50"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-3 bg-white text-black rounded-xl font-medium hover:bg-neutral-200 transition-colors"
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-3 bg-white text-black rounded-xl font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50"
                   >
-                    {editingId ? 'Update' : 'Simpan'}
+                    {isSubmitting
+                      ? 'Menyimpan...'
+                      : editingId
+                      ? 'Update'
+                      : 'Simpan'}
                   </button>
                 </div>
               </form>

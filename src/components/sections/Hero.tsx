@@ -4,10 +4,21 @@ import { motion } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
 import { HiArrowRight } from 'react-icons/hi';
 import { heroSocialLinks } from '@/constants';
-import { useCMSProfile } from '@/hooks/useCMSData';
+import { useSupabaseProfile } from '@/hooks/useSupabase';
 
 export default function Hero() {
-  const profile = useCMSProfile();
+  const { profile, loading } = useSupabaseProfile();
+
+  if (loading || !profile) {
+    return (
+      <section
+        id="home"
+        className="min-h-screen flex items-center justify-center"
+      >
+        <div className="animate-pulse text-white">Loading...</div>
+      </section>
+    );
+  }
 
   const scrollToSection = (href: string) => {
     const element = document.querySelector(href);

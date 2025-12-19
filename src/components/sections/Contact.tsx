@@ -5,7 +5,7 @@ import { useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
 import { FaEnvelope, FaMapMarkerAlt, FaPaperPlane } from 'react-icons/fa';
 import { socialLinks } from '@/constants';
-import { useCMSProfile } from '@/hooks/useCMSData';
+import { useSupabaseProfile } from '@/hooks/useSupabase';
 import emailjs from '@emailjs/browser';
 
 // ==========================================
@@ -19,7 +19,7 @@ const EMAILJS_PUBLIC_KEY = 'pxNqsgOTki_vb8cAb'; // Ganti dengan Public Key kamu
 export default function Contact() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const profile = useCMSProfile();
+  const { profile } = useSupabaseProfile();
   const [formState, setFormState] = useState({
     name: '',
     email: '',

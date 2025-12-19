@@ -12,16 +12,32 @@ import {
   HiStar,
   HiPhotograph,
 } from 'react-icons/hi';
-import { useCMSStore } from '@/store/cms-store';
-import type { CMSProject } from '@/types/cms';
+import { useSupabaseProjects } from '@/hooks/useSupabase';
+import { DBProject } from '@/lib/supabase';
 import Image from 'next/image';
 
-type FormData = Omit<CMSProject, 'id' | 'createdAt'>;
+type FormData = {
+  title: string;
+  description: string;
+  full_description: string;
+  image: string;
+  gallery: string[];
+  category: string;
+  tech: string[];
+  features: string[];
+  challenges: string;
+  solutions: string;
+  github: string;
+  demo: string;
+  featured: boolean;
+  size: 'small' | 'medium' | 'large';
+  order_index: number;
+};
 
 const defaultForm: FormData = {
   title: '',
   description: '',
-  fullDescription: '',
+  full_description: '',
   image: '',
   gallery: [],
   category: 'Web',
@@ -33,16 +49,27 @@ const defaultForm: FormData = {
   demo: '',
   featured: false,
   size: 'small',
+  order_index: 0,
 };
 
 export default function ProjectsPage() {
-  const { projects, addProject, updateProject, deleteProject } = useCMSStore();
+  const { projects, loading, addProject, updateProject, deleteProject } =
+    useSupabaseProjects();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>(defaultForm);
   const [techInput, setTechInput] = useState('');
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+      </div>
+    );
+  }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -66,46 +93,61 @@ export default function ProjectsPage() {
 
   const openCreateModal = () => {
     setEditingId(null);
-    setFormData(defaultForm);
+    setFormData({ ...defaultForm, order_index: projects.length });
     setIsModalOpen(true);
   };
 
-  const openEditModal = (project: CMSProject) => {
+  const openEditModal = (project: DBProject) => {
     setEditingId(project.id);
     setFormData({
       title: project.title,
-      description: project.description,
-      fullDescription: project.fullDescription || '',
+      description: project.description || '',
+      full_description: project.full_description || '',
       image: project.image || '',
       gallery: project.gallery || [],
       category: project.category,
-      tech: project.tech,
+      tech: project.tech || [],
       features: project.features || [],
       challenges: project.challenges || '',
       solutions: project.solutions || '',
-      github: project.github,
-      demo: project.demo,
+      github: project.github || '',
+      demo: project.demo || '',
       featured: project.featured,
       size: project.size,
+      order_index: project.order_index,
     });
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      updateProject(editingId, formData);
-    } else {
-      addProject(formData);
+    setIsSaving(true);
+
+    try {
+      if (editingId) {
+        await updateProject(editingId, formData);
+      } else {
+        await addProject(formData);
+      }
+      setIsModalOpen(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error('Error saving project:', error);
+      alert('Gagal menyimpan project. Silakan coba lagi.');
+    } finally {
+      setIsSaving(false);
     }
-    setIsModalOpen(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Apakah Anda yakin ingin menghapus project ini?')) {
-      deleteProject(id);
+      try {
+        await deleteProject(id);
+      } catch (error) {
+        console.error('Error deleting project:', error);
+        alert('Gagal menghapus project.');
+      }
     }
   };
 
@@ -367,11 +409,11 @@ export default function ProjectsPage() {
                     Full Description (Detail Page)
                   </label>
                   <textarea
-                    value={formData.fullDescription || ''}
+                    value={formData.full_description || ''}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        fullDescription: e.target.value,
+                        full_description: e.target.value,
                       }))
                     }
                     rows={4}
@@ -589,9 +631,14 @@ export default function ProjectsPage() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-3 bg-white text-black rounded-xl font-medium hover:bg-neutral-200 transition-colors"
+                    disabled={isSaving}
+                    className="flex-1 px-4 py-3 bg-white text-black rounded-xl font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50"
                   >
-                    {editingId ? 'Update' : 'Simpan'}
+                    {isSaving
+                      ? 'Menyimpan...'
+                      : editingId
+                      ? 'Update'
+                      : 'Simpan'}
                   </button>
                 </div>
               </form>

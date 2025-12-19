@@ -10,7 +10,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
 } from 'react-icons/fa';
-import { useCMSProjectById } from '@/hooks/useCMSData';
+import { useSupabaseProject } from '@/hooks/useSupabase';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -27,11 +27,11 @@ export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = params.id as string;
-  const project = useCMSProjectById(projectId);
+  const { project, loading } = useSupabaseProject(projectId);
   const [activeImage, setActiveImage] = useState(0);
   const isMounted = useIsMounted();
 
-  if (!isMounted) {
+  if (!isMounted || loading) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
         <div className="animate-pulse text-white">Loading...</div>
@@ -54,7 +54,9 @@ export default function ProjectDetailPage() {
     );
   }
 
-  const allImages = [project.image, ...(project.gallery || [])].filter(Boolean);
+  const allImages = [project.image, ...(project.gallery || [])].filter(
+    (img): img is string => img !== null && img !== undefined && img !== ''
+  );
 
   const nextImage = () => {
     if (allImages.length > 0) {
@@ -194,7 +196,7 @@ export default function ProjectDetailPage() {
                 Tentang Project
               </h2>
               <div className="text-neutral-400 leading-relaxed whitespace-pre-line">
-                {project.fullDescription}
+                {project.full_description || project.description}
               </div>
             </div>
 
@@ -301,18 +303,14 @@ export default function ProjectDetailPage() {
                 Tech Stack
               </h3>
               <div className="flex flex-wrap gap-2">
-                {project.techNames?.map((tech, i) => {
-                  const Icon = project.tech[i];
-                  const techName = tech
-                    .replace('Si', '')
-                    .replace(/([A-Z])/g, ' $1')
-                    .trim();
+                {project.tech.map((techName: string, i: number) => {
+                  const Icon = project.techIcons[i];
                   return (
                     <div
                       key={i}
                       className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg text-sm text-neutral-400"
                     >
-                      {Icon && <Icon size={14} />}
+                      {Icon && <Icon />}
                       <span>{techName}</span>
                     </div>
                   );
@@ -324,11 +322,13 @@ export default function ProjectDetailPage() {
             <div className="bg-neutral-900/50 border border-white/5 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-white mb-2">Tanggal</h3>
               <p className="text-neutral-400 text-sm">
-                {new Date(project.createdAt).toLocaleDateString('id-ID', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+                {project.created_at
+                  ? new Date(project.created_at).toLocaleDateString('id-ID', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })
+                  : 'Tidak tersedia'}
               </p>
             </div>
           </motion.div>

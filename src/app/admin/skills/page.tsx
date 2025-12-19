@@ -10,19 +10,20 @@ import {
   HiX,
   HiCheck,
 } from 'react-icons/hi';
-import { useCMSStore } from '@/store/cms-store';
-import type { CMSSkill } from '@/types/cms';
+import { useSupabaseSkills } from '@/hooks/useSupabase';
+import type { DBSkill } from '@/lib/supabase';
 
-type FormData = Omit<CMSSkill, 'id'>;
+type FormData = Omit<DBSkill, 'id' | 'created_at'>;
 
 const defaultForm: FormData = {
   name: '',
   level: 80,
   category: 'frontend',
   icon: 'SiReact',
+  order_index: 0,
 };
 
-const categoryColors = {
+const categoryColors: Record<string, string> = {
   frontend: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   backend: 'bg-green-500/20 text-green-400 border-green-500/30',
   iot: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
@@ -53,12 +54,14 @@ const iconOptions = [
 ];
 
 export default function SkillsPage() {
-  const { skills, addSkill, updateSkill, deleteSkill } = useCMSStore();
+  const { skills, addSkill, updateSkill, deleteSkill, loading } =
+    useSupabaseSkills();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>(defaultForm);
   const [saved, setSaved] = useState(false);
   const [filter, setFilter] = useState<string>('all');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const filteredSkills =
     filter === 'all' ? skills : skills.filter((s) => s.category === filter);
@@ -69,34 +72,56 @@ export default function SkillsPage() {
     setIsModalOpen(true);
   };
 
-  const openEditModal = (skill: CMSSkill) => {
+  const openEditModal = (skill: (typeof skills)[0]) => {
     setEditingId(skill.id);
     setFormData({
       name: skill.name,
       level: skill.level,
       category: skill.category,
       icon: skill.icon,
+      order_index: skill.order_index || 0,
     });
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      updateSkill(editingId, formData);
-    } else {
-      addSkill(formData);
+    setIsSubmitting(true);
+    try {
+      if (editingId) {
+        await updateSkill(editingId, formData);
+      } else {
+        await addSkill(formData);
+      }
+      setIsModalOpen(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error('Error saving skill:', error);
+      alert('Gagal menyimpan skill');
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsModalOpen(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Apakah Anda yakin ingin menghapus skill ini?')) {
-      deleteSkill(id);
+      try {
+        await deleteSkill(id);
+      } catch (error) {
+        console.error('Error deleting skill:', error);
+        alert('Gagal menghapus skill');
+      }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-pulse text-white">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -357,15 +382,21 @@ export default function SkillsPage() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="flex-1 px-4 py-3 bg-neutral-800 text-white rounded-xl font-medium hover:bg-neutral-700 transition-colors"
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-3 bg-neutral-800 text-white rounded-xl font-medium hover:bg-neutral-700 transition-colors disabled:opacity-50"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-3 bg-white text-black rounded-xl font-medium hover:bg-neutral-200 transition-colors"
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-3 bg-white text-black rounded-xl font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50"
                   >
-                    {editingId ? 'Update' : 'Simpan'}
+                    {isSubmitting
+                      ? 'Menyimpan...'
+                      : editingId
+                      ? 'Update'
+                      : 'Simpan'}
                   </button>
                 </div>
               </form>

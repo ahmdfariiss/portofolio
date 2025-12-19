@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useRef, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   FaBriefcase,
   FaGraduationCap,
@@ -9,11 +9,45 @@ import {
   FaMapMarkerAlt,
 } from 'react-icons/fa';
 import { HiArrowRight, HiArrowLeft } from 'react-icons/hi';
-import { useCMSExperiences, useCMSEducation } from '@/hooks/useCMSData';
+import {
+  useSupabaseExperiences,
+  useSupabaseEducation,
+} from '@/hooks/useSupabase';
+import type { DBExperience, DBEducation } from '@/lib/supabase';
+
+// Helper to get title from experience or education
+const getItemTitle = (
+  item: DBExperience | DBEducation | undefined,
+  type: 'work' | 'education'
+) => {
+  if (!item) return '';
+  if (type === 'work') return (item as DBExperience).title;
+  return (item as DBEducation).degree;
+};
+
+// Helper to get organization/institution
+const getItemPlace = (
+  item: DBExperience | DBEducation | undefined,
+  type: 'work' | 'education'
+) => {
+  if (!item) return '';
+  if (type === 'work') return (item as DBExperience).organization;
+  return (item as DBEducation).institution;
+};
+
+// Helper to get skills/achievements
+const getItemTags = (
+  item: DBExperience | DBEducation | undefined,
+  type: 'work' | 'education'
+): string[] => {
+  if (!item) return [];
+  if (type === 'work') return (item as DBExperience).skills || [];
+  return (item as DBEducation).achievements || [];
+};
 
 export default function Experience() {
-  const experiences = useCMSExperiences();
-  const education = useCMSEducation();
+  const { experiences } = useSupabaseExperiences();
+  const { education } = useSupabaseEducation();
 
   const [activeTab, setActiveTab] = useState<'work' | 'education'>('work');
   const [activeIndex, setActiveIndex] = useState(0);
@@ -189,20 +223,11 @@ export default function Experience() {
                   transition={{ delay: 0.3 }}
                 >
                   <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                    {currentItem?.title}
+                    {getItemTitle(currentItem, activeTab)}
                   </h3>
                   <div className="flex items-center gap-2 text-neutral-400 mb-6">
                     <FaMapMarkerAlt size={12} />
-                    <span>
-                      {activeTab === 'work'
-                        ? (
-                            currentItem as ReturnType<
-                              typeof useCMSExperiences
-                            >[0]
-                          )?.organization
-                        : (currentItem as ReturnType<typeof useCMSEducation>[0])
-                            ?.institution}
-                    </span>
+                    <span>{getItemPlace(currentItem, activeTab)}</span>
                   </div>
                   <p className="text-neutral-500 leading-relaxed mb-6">
                     {currentItem?.description}
@@ -211,9 +236,7 @@ export default function Experience() {
                   {/* Tags/Skills */}
                   <div className="flex flex-wrap gap-2">
                     {activeTab === 'work'
-                      ? (
-                          currentItem as ReturnType<typeof useCMSExperiences>[0]
-                        )?.skills?.map((skill) => (
+                      ? getItemTags(currentItem, 'work').map((skill) => (
                           <span
                             key={skill}
                             className="px-3 py-1.5 text-xs bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400"
@@ -221,17 +244,17 @@ export default function Experience() {
                             {skill}
                           </span>
                         ))
-                      : (
-                          currentItem as ReturnType<typeof useCMSEducation>[0]
-                        )?.achievements?.map((achievement) => (
-                          <span
-                            key={achievement}
-                            className="flex items-center gap-1 px-3 py-1.5 text-xs bg-green-500/10 border border-green-500/20 rounded-lg text-green-400"
-                          >
-                            <FaTrophy size={10} />
-                            {achievement}
-                          </span>
-                        ))}
+                      : getItemTags(currentItem, 'education').map(
+                          (achievement) => (
+                            <span
+                              key={achievement}
+                              className="flex items-center gap-1 px-3 py-1.5 text-xs bg-green-500/10 border border-green-500/20 rounded-lg text-green-400"
+                            >
+                              <FaTrophy size={10} />
+                              {achievement}
+                            </span>
+                          )
+                        )}
                   </div>
                 </motion.div>
 
@@ -330,7 +353,7 @@ export default function Experience() {
                               isActive ? 'text-white' : 'text-neutral-400'
                             }`}
                           >
-                            {item.title}
+                            {getItemTitle(item, activeTab)}
                           </h4>
                           <span
                             className={`text-xs font-mono transition-colors ${
@@ -345,11 +368,7 @@ export default function Experience() {
                             isActive ? 'text-neutral-400' : 'text-neutral-600'
                           }`}
                         >
-                          {activeTab === 'work'
-                            ? (item as ReturnType<typeof useCMSExperiences>[0])
-                                .organization
-                            : (item as ReturnType<typeof useCMSEducation>[0])
-                                .institution}
+                          {getItemPlace(item, activeTab)}
                         </p>
                       </div>
 

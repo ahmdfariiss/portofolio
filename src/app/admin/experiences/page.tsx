@@ -10,10 +10,10 @@ import {
   HiX,
   HiCheck,
 } from 'react-icons/hi';
-import { useCMSStore } from '@/store/cms-store';
-import type { CMSExperience } from '@/types/cms';
+import { useSupabaseExperiences } from '@/hooks/useSupabase';
+import type { DBExperience } from '@/lib/supabase';
 
-type FormData = Omit<CMSExperience, 'id' | 'createdAt'>;
+type FormData = Omit<DBExperience, 'id' | 'created_at'>;
 
 const defaultForm: FormData = {
   title: '',
@@ -21,16 +21,23 @@ const defaultForm: FormData = {
   period: '',
   description: '',
   skills: [],
+  order_index: 0,
 };
 
 export default function ExperiencesPage() {
-  const { experiences, addExperience, updateExperience, deleteExperience } =
-    useCMSStore();
+  const {
+    experiences,
+    addExperience,
+    updateExperience,
+    deleteExperience,
+    loading,
+  } = useSupabaseExperiences();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>(defaultForm);
   const [skillInput, setSkillInput] = useState('');
   const [saved, setSaved] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const openCreateModal = () => {
     setEditingId(null);
@@ -38,7 +45,7 @@ export default function ExperiencesPage() {
     setIsModalOpen(true);
   };
 
-  const openEditModal = (exp: CMSExperience) => {
+  const openEditModal = (exp: (typeof experiences)[0]) => {
     setEditingId(exp.id);
     setFormData({
       title: exp.title,
@@ -46,25 +53,39 @@ export default function ExperiencesPage() {
       period: exp.period,
       description: exp.description,
       skills: exp.skills,
+      order_index: exp.order_index || 0,
     });
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      updateExperience(editingId, formData);
-    } else {
-      addExperience(formData);
+    setIsSubmitting(true);
+    try {
+      if (editingId) {
+        await updateExperience(editingId, formData);
+      } else {
+        await addExperience(formData);
+      }
+      setIsModalOpen(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error('Error saving experience:', error);
+      alert('Gagal menyimpan pengalaman');
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsModalOpen(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Apakah Anda yakin ingin menghapus pengalaman ini?')) {
-      deleteExperience(id);
+      try {
+        await deleteExperience(id);
+      } catch (error) {
+        console.error('Error deleting experience:', error);
+        alert('Gagal menghapus pengalaman');
+      }
     }
   };
 
@@ -84,6 +105,14 @@ export default function ExperiencesPage() {
       skills: prev.skills.filter((s) => s !== skill),
     }));
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-pulse text-white">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -331,15 +360,21 @@ export default function ExperiencesPage() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="flex-1 px-4 py-3 bg-neutral-800 text-white rounded-xl font-medium hover:bg-neutral-700 transition-colors"
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-3 bg-neutral-800 text-white rounded-xl font-medium hover:bg-neutral-700 transition-colors disabled:opacity-50"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-3 bg-white text-black rounded-xl font-medium hover:bg-neutral-200 transition-colors"
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-3 bg-white text-black rounded-xl font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50"
                   >
-                    {editingId ? 'Update' : 'Simpan'}
+                    {isSubmitting
+                      ? 'Menyimpan...'
+                      : editingId
+                      ? 'Update'
+                      : 'Simpan'}
                   </button>
                 </div>
               </form>
