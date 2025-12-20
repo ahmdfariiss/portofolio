@@ -58,7 +58,7 @@ export default function Navbar() {
             className="shrink-0 cursor-pointer"
             onClick={() => scrollToSection('#home')}
           >
-            <span className="text-xl font-bold text-white">Portfolio</span>
+            <span className="text-xl font-bold text-white">Farisdev</span>
           </motion.div>
 
           {/* Desktop Navigation */}

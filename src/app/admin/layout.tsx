@@ -41,11 +41,13 @@ export default function AdminLayout({
   const router = useRouter();
   const { isAuthenticated, logout } = useCMSStore();
 
-  // Use layout effect for synchronous mount detection
-  if (typeof window !== 'undefined' && !mounted) {
-    // This runs during render, not in effect - safe pattern for hydration
-    Promise.resolve().then(() => setMounted(true));
-  }
+  // Set mounted state after hydration
+  useEffect(() => {
+    const timer = requestAnimationFrame(() => {
+      setMounted(true);
+    });
+    return () => cancelAnimationFrame(timer);
+  }, []);
 
   useEffect(() => {
     if (mounted && !isAuthenticated && pathname !== '/admin/login') {

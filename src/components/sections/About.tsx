@@ -5,10 +5,12 @@ import { useInView } from 'framer-motion';
 import { useRef, useState, useEffect } from 'react';
 import { FaCode, FaRocket } from 'react-icons/fa';
 import { supabase } from '@/lib/supabase';
+import Image from 'next/image';
 
 interface ProfileData {
   name: string;
   bio: string[];
+  avatar: string;
 }
 
 interface HighlightData {
@@ -29,11 +31,20 @@ const defaultProfile: ProfileData = {
     'Passionate about building web applications and IoT solutions.',
     'Currently pursuing my degree while working on various projects.',
   ],
+  avatar: '/avatar.jpg', // Default avatar path
 };
 
 const defaultHighlights: HighlightData[] = [
-  { icon: 'FaCode', title: 'Web Development', description: 'Building modern web apps' },
-  { icon: 'FaRocket', title: 'IoT Projects', description: 'Smart devices & automation' },
+  {
+    icon: 'FaCode',
+    title: 'Web Development',
+    description: 'Building modern web apps',
+  },
+  {
+    icon: 'FaRocket',
+    title: 'IoT Projects',
+    description: 'Smart devices & automation',
+  },
 ];
 
 const defaultStats: StatData[] = [
@@ -51,9 +62,10 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 export default function About() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  
+
   const [profile, setProfile] = useState<ProfileData>(defaultProfile);
-  const [highlights, setHighlights] = useState<HighlightData[]>(defaultHighlights);
+  const [highlights, setHighlights] =
+    useState<HighlightData[]>(defaultHighlights);
   const [stats, setStats] = useState<StatData[]>(defaultStats);
 
   useEffect(() => {
@@ -63,9 +75,9 @@ export default function About() {
         // Fetch profile
         const { data: profileData } = await supabase
           .from('profile')
-          .select('name, bio')
+          .select('name, bio, avatar')
           .single();
-        
+
         if (profileData) {
           setProfile(profileData);
         }
@@ -75,17 +87,18 @@ export default function About() {
           .from('highlights')
           .select('icon, title, description')
           .order('order_index');
-        
+
         if (highlightsData && highlightsData.length > 0) {
           setHighlights(highlightsData);
         }
 
         // Fetch stats
-        const { data: statsData } = await supabase
+        const { data: statsData, error: statsError } = await supabase
           .from('stats')
-          .select('value, label')
-          .order('order_index');
-        
+          .select('value, label');
+
+        console.log('Stats from DB:', statsData, statsError);
+
         if (statsData && statsData.length > 0) {
           setStats(statsData);
         }
@@ -194,7 +207,7 @@ export default function About() {
                 <div className="absolute inset-4 border border-white/10 rounded-2xl" />
                 <div className="absolute inset-8 border border-white/5 rounded-xl" />
 
-                {/* Center Content */}
+                {/* Center Content - Avatar Photo */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <motion.div
                     animate={{ rotate: [0, 360] }}
@@ -203,8 +216,24 @@ export default function About() {
                       repeat: Infinity,
                       ease: 'linear',
                     }}
-                    className="w-56 h-56 border border-dashed border-white/10 rounded-full"
+                    className="absolute w-56 h-56 border border-dashed border-white/10 rounded-full"
                   />
+                  {/* Avatar Image */}
+                  <div className="relative w-40 h-40 rounded-full overflow-hidden border-2 border-white/20">
+                    {profile.avatar ? (
+                      <Image
+                        src={profile.avatar}
+                        alt={profile.name}
+                        fill
+                        className="object-cover"
+                        priority
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
+                        <span className="text-4xl text-neutral-600">👤</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Stats positioned around */}
@@ -221,7 +250,9 @@ export default function About() {
                         initial={{ opacity: 0, scale: 0 }}
                         animate={isInView ? { opacity: 1, scale: 1 } : {}}
                         transition={{ delay: 0.5 + index * 0.2 }}
-                        className={`absolute ${positions[index] || ''} text-center`}
+                        className={`absolute ${
+                          positions[index] || ''
+                        } text-center`}
                       >
                         <div className="text-3xl font-bold text-white">
                           {stat.value}
@@ -232,15 +263,6 @@ export default function About() {
                       </motion.div>
                     );
                   })}
-                </div>
-
-                {/* Center dot */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="w-3 h-3 bg-white rounded-full"
-                  />
                 </div>
               </div>
             </motion.div>

@@ -55,7 +55,8 @@ export default function Certificates() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [direction, setDirection] = useState(0);
-  const [certificates, setCertificates] = useState<CertificateData[]>(defaultCertificates);
+  const [certificates, setCertificates] =
+    useState<CertificateData[]>(defaultCertificates);
 
   // Fetch from Supabase
   useEffect(() => {
@@ -65,7 +66,7 @@ export default function Certificates() {
           .from('certificates')
           .select('*')
           .order('order_index');
-        
+
         if (data && data.length > 0) {
           setCertificates(data);
         }
@@ -218,7 +219,9 @@ export default function Certificates() {
                     ) : (
                       <div className="flex flex-col items-center justify-center text-neutral-600">
                         <FaCertificate size={80} />
-                        <span className="mt-4 text-sm">Certificate Preview</span>
+                        <span className="mt-4 text-sm">
+                          Certificate Preview
+                        </span>
                       </div>
                     )}
                   </motion.div>
@@ -296,6 +299,22 @@ export default function Certificates() {
                 {String(certificates.length).padStart(2, '0')}
               </span>
             </div>
+          </motion.div>
+
+          {/* View All Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.6 }}
+            className="flex justify-center mt-8"
+          >
+            <a
+              href="/certificates"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 rounded-full text-neutral-400 hover:text-white hover:border-white/40 transition-all duration-300"
+            >
+              <span>View All Certificates</span>
+              <FaExternalLinkAlt size={12} />
+            </a>
           </motion.div>
         </motion.div>
       </div>

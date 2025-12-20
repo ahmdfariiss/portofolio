@@ -75,7 +75,7 @@ export default function Footer() {
               transition={{ delay: 0.3 }}
               className="text-neutral-600 text-xs"
             >
-              Next.js • TypeScript • Tailwind CSS
+              Ahmad Faris
             </motion.p>
           </div>
 

@@ -10,7 +10,10 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 // Debug log
 console.log('=== SUPABASE INIT ===');
 console.log('URL:', supabaseUrl ? supabaseUrl : 'MISSING!');
-console.log('Key:', supabaseKey ? supabaseKey.substring(0, 30) + '...' : 'MISSING!');
+console.log(
+  'Key:',
+  supabaseKey ? supabaseKey.substring(0, 30) + '...' : 'MISSING!'
+);
 console.log('=====================');
 
 if (!supabaseUrl || !supabaseKey) {
@@ -142,7 +145,10 @@ export const profileOperations = {
   async get() {
     console.log('profileOperations.get() called');
     try {
-      const { data, error } = await supabase.from('profile').select('*').single();
+      const { data, error } = await supabase
+        .from('profile')
+        .select('*')
+        .single();
       console.log('profileOperations.get() result:', { data, error });
       if (error) throw error;
       return data as DBProfile;
